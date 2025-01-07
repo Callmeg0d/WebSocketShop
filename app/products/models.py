@@ -15,6 +15,7 @@ class Products(Base):
     features: Mapped[list[str]] = mapped_column(JSON, nullable=False)
     category_name: Mapped[str] = mapped_column(ForeignKey("categories.category_name"))
 
+
     category: Mapped["Categories"] = relationship(back_populates="products")
     carts: Mapped[list["ShoppingCarts"]] = relationship(back_populates="product")
     reviews: Mapped[list["Reviews"]] = relationship(back_populates="product")
