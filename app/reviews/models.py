@@ -12,6 +12,5 @@ class Reviews(Base):
     feedback: Mapped[str] = mapped_column()
     rating: Mapped[int] = mapped_column(nullable=False)
 
-
     user: Mapped["Users"] = relationship(back_populates="reviews")
     product: Mapped["Products"] = relationship(back_populates="reviews")

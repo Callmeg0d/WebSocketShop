@@ -12,6 +12,5 @@ class ShoppingCarts(Base):
     quantity: Mapped[int] = mapped_column(nullable=False)
     total_cost: Mapped[int] = mapped_column(nullable=False)
 
-
     user: Mapped["Users"] = relationship(back_populates="shopping_carts")
     product: Mapped["Products"] = relationship(back_populates="shopping_carts")

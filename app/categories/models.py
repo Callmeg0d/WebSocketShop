@@ -7,5 +7,4 @@ class Categories(Base):
 
     category_name: Mapped[str] = mapped_column(primary_key=True)
 
-
-    products: Mapped[list["Products"]] = relationship( back_populates="category")
+    products: Mapped[list["Products"]] = relationship(back_populates="category")

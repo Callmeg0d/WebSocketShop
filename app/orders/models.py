@@ -15,5 +15,4 @@ class Orders(Base):
     order_items: Mapped[list[str]] = mapped_column(JSON, nullable=False)
     total_cost: Mapped[int] = mapped_column(nullable=False)
 
-
     user: Mapped["Users"] = relationship(back_populates="orders")
