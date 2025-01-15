@@ -1,6 +1,12 @@
+from typing import TYPE_CHECKING
+
 from app.database import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey
+
+if TYPE_CHECKING:
+    from app.users.models import Users
+    from app.products.models import Products
 
 
 class Reviews(Base):
