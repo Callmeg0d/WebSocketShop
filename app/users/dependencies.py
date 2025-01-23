@@ -1,8 +1,9 @@
-from fastapi import Request, HTTPException, status, Depends
+from fastapi import Request, Depends
 from jose import jwt, JWTError
 from datetime import datetime
 from app.config import settings
-
+from app.exceptions import (IncorrectTokenFormatException, TokenAbsentException, TokenExpiredException,
+                            UserIsNotPresentException)
 
 from app.users.dao import UsersDAO
 
@@ -10,7 +11,7 @@ from app.users.dao import UsersDAO
 def get_token(request: Request):
     token = request.cookies.get("access_token")
     if not token:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+        raise TokenAbsentException
     return token
 
 
@@ -20,16 +21,16 @@ async def get_current_user(token: str = Depends(get_token)):
             token, settings.SECRET_KEY, settings.ALGORITHM
         )
     except JWTError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+        raise IncorrectTokenFormatException
     expire: str = payload.get("exp")  #достали время истечения токена
     if (not expire) or int(expire) < datetime.utcnow().timestamp():
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+        raise TokenExpiredException
 
     user_id: str = payload.get("sub")  #достали id
     if not user_id:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+        raise UserIsNotPresentException
 
     user = await UsersDAO.find_one_or_none(id=int(user_id))
     if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+        raise UserIsNotPresentException
     return user

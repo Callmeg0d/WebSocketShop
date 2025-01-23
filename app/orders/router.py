@@ -13,3 +13,10 @@ router = APIRouter(
 @router.get("")
 async def get_orders(user: Users = Depends(get_current_user)):
     return await OrdersDAO.find_all(user_id=user.id)
+
+
+@router.post("")
+async def make_order(user: Users = Depends(get_current_user)):
+    if user.delivery_address is None:
+        raise "Укажите адрес доставки"
+    return await OrdersDAO.make_order(user_id=user.id)
