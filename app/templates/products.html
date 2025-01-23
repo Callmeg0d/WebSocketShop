@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Товары</title>
+</head>
+<body>
+    <div>
+        {%for product in products%}
+        <div style="display:flex; margin-left: 150px;">
+            <img src="{{ url_for('static', path='images/' + product.product_id|string + '.webp') }}"
+                 alt="Фото товара" width="200">
+            <div>
+                <h1>{{product.name}}</h1>
+                <h4>{{product.description}}</h4>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>
