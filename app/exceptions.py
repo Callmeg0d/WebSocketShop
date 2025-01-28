@@ -36,3 +36,8 @@ class TokenExpiredException(ShopException):
 
 class UserIsNotPresentException(ShopException):
     status_code = status.HTTP_401_UNAUTHORIZED
+
+
+class CannotAddDataToDatabase(ShopException):
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    detail = "Не удалось добавить запись"
