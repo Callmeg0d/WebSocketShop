@@ -3,22 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+          content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Товары</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        h1, h4 {
+            margin: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            justify-content: center;
+            max-width: 1280px;
+            margin: auto;
+        }
+        .product-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: box-shadow 0.3s;
+            width: 100%;
+            max-width: 300px;
+        }
+        .product-card:hover {
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+        .product-card img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+        }
+        .product-info {
+            padding: 15px;
+            text-align: center;
+        }
+        .product-info h1 {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .product-info h4 {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        .add-to-cart {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        .add-to-cart:hover {
+            background-color: #218838;
+        }
+    </style>
 </head>
-<body>
-    <div>
-        {%for product in products%}
-        <div style="display:flex; margin-left: 150px;">
-            <img src="{{ url_for('static', path='images/' + product.product_id|string + '.webp') }}"
-                 alt="Фото товара" width="200">
-            <div>
-                <h1>{{product.name}}</h1>
-                <h4>{{product.description}}</h4>
+{% extends "base.html" %}
+
+{% block head %}
+    <script>
+        function searchProducts() {
+            let input = document.getElementById("searchInput").value.toLowerCase();
+            let products = document.getElementsByClassName("product-card");
+
+            for (let product of products) {
+                let title = product.querySelector("h1").textContent.toLowerCase();
+                let description = product.querySelector("h4").textContent.toLowerCase();
+
+                if (title.includes(input) || description.includes(input)) {
+                    product.style.display = "flex";
+                } else {
+                    product.style.display = "none";
+                }
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            document.getElementById("searchInput").addEventListener("keypress", function(event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    searchProducts();
+                }
+            });
+        });
+    </script>
+    <style>
+        .search-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+        #searchInput {
+            width: 50%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px 0 0 5px;
+            outline: none;
+        }
+        .search-button {
+            padding: 10px 15px;
+            background-color: #28a745;
+            border: none;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+        }
+        .search-button img {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Поиск товаров...">
+        <button onclick="searchProducts()">Поиск</button>
+    </div>
+
+    <div class="product-grid">
+        {% for product in products %}
+        <div class="product-card">
+            <img src="{{ url_for('static', path='images/' + product.product_id|string + '.webp') }}" alt="Фото товара">
+            <div class="product-info">
+                <h1>{{ product.name }}</h1>
+                <h4>{{ product.description }}</h4>
+                <h3>{{ product.price }}</h3>
+                <a href="/add-to-cart/{{ product.product_id }}" class="add-to-cart">Добавить в корзину</a>
             </div>
         </div>
         {% endfor %}
     </div>
-</body>
-</html>
+</div>
+{% endblock %}
