@@ -41,3 +41,13 @@ class UserIsNotPresentException(ShopException):
 class CannotAddDataToDatabase(ShopException):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     detail = "Не удалось добавить запись"
+
+
+class CannotMakeOrderWithoutAddress(ShopException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    detail = "Для заказа необходимо указать адрес доставки"
+
+
+class CannotMakeOrderWithoutItems(ShopException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    detail = "Для заказа необходимо иметь товары в коризне"
