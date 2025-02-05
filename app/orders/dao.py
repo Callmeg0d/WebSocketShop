@@ -46,3 +46,5 @@ class OrdersDAO(BaseDAO):
             await session.execute(delete_query)
 
             await session.commit()
+            await session.refresh(orders_item)
+            return orders_item
