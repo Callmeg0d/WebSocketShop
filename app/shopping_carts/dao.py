@@ -47,3 +47,21 @@ class CartsDAO(BaseDAO):
                 )
                 session.add(new_cart_item)
             await session.commit()
+
+    @classmethod
+    async def get_cart_items(cls, user_id: int):
+        async with async_session_maker() as session:
+            query = (
+                select(
+                    ShoppingCarts.product_id,
+                    Products.name,
+                    Products.description,
+                    Products.price,
+                    ShoppingCarts.quantity,
+                    (Products.price * ShoppingCarts.quantity).label("total_cost")
+                )
+                .join(Products, ShoppingCarts.product_id == Products.product_id)
+                .where(ShoppingCarts.user_id == user_id)
+            )
+            result = await session.execute(query)
+            return result.mappings().all()
