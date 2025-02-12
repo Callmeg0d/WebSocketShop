@@ -8,14 +8,21 @@ from app.exceptions import (IncorrectTokenFormatException, TokenAbsentException,
 from app.users.dao import UsersDAO
 
 
-def get_token(request: Request):
+def get_access_token(request: Request):
     token = request.cookies.get("access_token")
     if not token:
         raise TokenAbsentException
     return token
 
 
-async def get_current_user(token: str = Depends(get_token)):
+def get_refresh_token(request: Request):
+    token = request.cookies.get("refresh_token")
+    if not token:
+        raise TokenExpiredException
+    return token
+
+
+async def get_current_user(token: str = Depends(get_access_token)):
     try: #декодим токен и достаём данные из payload
         payload = jwt.decode(
             token, settings.SECRET_KEY, settings.ALGORITHM
