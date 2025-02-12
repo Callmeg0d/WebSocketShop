@@ -3,26 +3,58 @@
 {% block head %}
     <script>
         async function loginUser() {
-            const wrongCredentialsSpan = document.getElementById("wrong_credentials");
-            wrongCredentialsSpan.textContent = "";
+    const wrongCredentialsSpan = document.getElementById("wrong_credentials");
+    wrongCredentialsSpan.textContent = "";
 
-            const url = "http://localhost:8000/auth/login";
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
+    const url = "http://localhost:8000/auth/login";
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    console.log("Отправляем запрос на авторизацию...");
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({email: email, password: password}),
+            credentials: 'include'
+        });
+
+        console.log("Ответ от сервера:", response);
+
+        if (response.ok) {
+            console.log("Авторизация успешна, токены записаны");
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            }
+        else {
+            console.log("Ошибка авторизации! Код ответа:", response.status);
+            wrongCredentialsSpan.textContent = "Неверный email или пароль";
+        }
+    } catch (error) {
+        console.error("Ошибка запроса:", error);
+    }
+}
+
+        async function refreshToken() {
+            const url = "http://localhost:8000/auth/refresh";
 
             await fetch(url, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({email: email, password: password}),
+                method: "POST",
+                credentials: 'include'
             }).then(response => {
                 if (response.status === 200) {
-                    window.location.href = "/pages/products"
+                    console.log("Токен успешно обновлён!");
+                    window.location.reload();
                 } else {
-                    wrongCredentialsSpan.textContent = "Неверный email или пароль";
+                    console.log("Ошибка обновления токена");
+                    window.location.href = "/pages/login";
                 }
             });
         }
     </script>
+
+
 {% endblock %}
 
 {% block content %}
