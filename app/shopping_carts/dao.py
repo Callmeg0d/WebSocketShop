@@ -1,4 +1,4 @@
-from sqlalchemy import update, select
+from sqlalchemy import update, select, delete
 from app.products.models import Products
 from app.database import async_session_maker
 
@@ -65,3 +65,14 @@ class CartsDAO(BaseDAO):
             )
             result = await session.execute(query)
             return result.mappings().all()
+
+    @classmethod
+    async def remove_from_cart(cls, user_id: int, product_id: int):
+        async with async_session_maker() as session:
+            query = delete(ShoppingCarts).where(
+                ShoppingCarts.user_id == user_id,
+                ShoppingCarts.product_id == product_id
+            )
+            result = await session.execute(query)
+            await session.commit()
+            return result.rowcount > 0

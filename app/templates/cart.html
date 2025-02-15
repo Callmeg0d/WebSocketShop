@@ -7,13 +7,23 @@
     {% if cart_items %}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for item in cart_items %}
-            <div class="p-4 border rounded-lg shadow-md bg-white">
-                <img src="{{ url_for('static', path='images/' + item.product_id|string + '.webp') }}" alt="Фото товара" class="w-full h-40 object-cover">
-                <h2 class="text-xl font-semibold mt-2">{{ item.name }}</h2>
-                <p class="text-gray-600">{{ item.description }}</p>
-                <p class="text-lg font-bold mt-2">{{ item.price }} ₽ x {{ item.quantity }}</p>
-                <p class="text-lg font-bold text-red-500">Всего: {{ item.total_cost }} ₽</p>
-                <button onclick="removeFromCart({{ item.product_id }})" class="mt-3 bg-red-500 text-white px-4 py-2 rounded-lg">Удалить</button>
+            <div class="relative p-4 border rounded-lg shadow-md bg-white flex flex-col items-center">
+                <img src="{{ url_for('static', path='images/' + item.product_id|string + '.webp') }}"
+                     alt="Фото товара"
+                     class="w-full h-40 object-contain rounded-md">
+
+                <div class="text-center mt-2">
+                    <h2 class="text-xl font-semibold">{{ item.name }}</h2>
+                    <p class="text-gray-600 text-sm">{{ item.description }}</p>
+                    <p class="text-lg font-bold mt-2">{{ item.price }} ₽ x {{ item.quantity }}</p>
+                    <p class="text-lg font-bold text-red-500">Всего: {{ item.total_cost }} ₽</p>
+                </div>
+
+                <!-- Кнопка удаления (мусорное ведро) -->
+                <button onclick="removeFromCart({{ item.product_id }})"
+                        class="btn__del j-basket-item-del absolute bottom-2 right-2">
+                    🗑
+                </button>
             </div>
             {% endfor %}
         </div>
@@ -28,14 +38,38 @@
 
 <script>
     async function removeFromCart(productId) {
-        await fetch(`/cart/remove/${productId}`, { method: 'DELETE' });
-        location.reload(); // Обновляем страницу после удаления
+        const response = await fetch(`/cart/remove/${productId}`, { method: 'DELETE' });
+        if (response.ok) {
+            console.log(`Товар с ID ${productId} удален`);
+            location.reload();
+        } else {
+            alert("Ошибка при удалении товара!");
+        }
     }
 
     async function checkout() {
-        await fetch("/cart/checkout", { method: "POST" });
-        alert("Заказ оформлен!");
-        window.location.href = "/pages/products";
+        const response = await fetch("/cart/checkout", { method: "POST" });
+        if (response.ok) {
+            alert("Заказ оформлен!");
+            window.location.href = "/pages/products";
+        } else {
+            alert("Ошибка при оформлении заказа.");
+        }
     }
 </script>
+
+<style>
+    .btn__del {
+        background-color: transparent;
+        border: none;
+        font-size: 22px; /* Размер иконки */
+        cursor: pointer;
+        transition: transform 0.2s, color 0.2s;
+    }
+
+    .btn__del:hover {
+        color: #cc0000;
+        transform: scale(1.2); /* Увеличение при наведении */
+    }
+</style>
 {% endblock %}
