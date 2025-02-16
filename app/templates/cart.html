@@ -19,7 +19,6 @@
                     <p class="text-lg font-bold text-red-500">Всего: {{ item.total_cost }} ₽</p>
                 </div>
 
-                <!-- Кнопка удаления (мусорное ведро) -->
                 <button onclick="removeFromCart({{ item.product_id }})"
                         class="btn__del j-basket-item-del absolute bottom-2 right-2">
                     🗑
@@ -32,7 +31,7 @@
             <button onclick="checkout()" class="bg-green-500 text-white px-6 py-3 rounded-lg text-lg">Оформить заказ</button>
         </div>
     {% else %}
-        <p class="text-center text-lg text-gray-600">Ваша корзина пуста 🛒</p>
+        <p class="text-center text-lg text-gray-600">Ваша корзина ещё пуста, для оформления заказа добавьте товары</p>
     {% endif %}
 </div>
 
@@ -46,16 +45,21 @@
             alert("Ошибка при удалении товара!");
         }
     }
+</script>>
 
+<script>
     async function checkout() {
-        const response = await fetch("/cart/checkout", { method: "POST" });
-        if (response.ok) {
-            alert("Заказ оформлен!");
-            window.location.href = "/pages/products";
-        } else {
-            alert("Ошибка при оформлении заказа.");
-        }
+    const response = await fetch("/orders/checkout", {
+        method: "POST",
+        credentials: "include"
+    });
+
+    if (response.ok) {
+        window.location.href = "/pages/products";
+    } else {
+        alert("Ошибка при оформлении заказа.");
     }
+}
 </script>
 
 <style>

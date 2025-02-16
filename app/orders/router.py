@@ -18,7 +18,7 @@ async def get_orders(user: Users = Depends(get_current_user)):
     return await OrdersDAO.find_all(user_id=user.id)
 
 
-@router.post("")
+@router.post("/checkout")
 async def make_order(user: Users = Depends(get_current_user)) -> SOrderResponse:
     if user.delivery_address is None:
         raise CannotMakeOrderWithoutAddress
