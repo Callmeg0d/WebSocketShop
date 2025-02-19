@@ -13,6 +13,7 @@ from fastapi import Request
 from app.exceptions import TokenExpiredException
 from jwt.exceptions import  InvalidTokenError
 from datetime import datetime, timedelta
+from app.tasks.tasks import send_registration_confirmation_email
 
 router_auth = APIRouter(
     prefix="/auth",
@@ -34,6 +35,9 @@ async def register_user(user_data: SUserAuth):
 
     hashed_password = get_password_hash(user_data.password)
     await UsersDAO.add(email=user_data.email, hashed_password=hashed_password)
+
+    # Отправка письма с подтверждением
+    send_registration_confirmation_email.delay(user_data.email)
 
     return JSONResponse(content={"message": "User created successfully"}, status_code=201)
 

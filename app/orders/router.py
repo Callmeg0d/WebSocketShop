@@ -29,5 +29,7 @@ async def make_order(user: Users = Depends(get_current_user)) -> SOrderResponse:
         raise CannotMakeOrderWithoutItems
 
     order_response = SOrderResponse.model_validate(order)
+
+    # Отправка письма с подтверждением
     send_order_confirmation_email.delay(order_response.model_dump(), user.email)
     return order_response
