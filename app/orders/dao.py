@@ -1,8 +1,9 @@
-from sqlalchemy import select, func, delete, literal_column
+from sqlalchemy import select, func, delete, literal_column, update
 
 from app.dao.base import BaseDAO
 from app.orders.models import Orders
 from app.database import async_session_maker
+from app.products.models import Products
 from app.shopping_carts.models import ShoppingCarts
 from app.users.models import Users
 
@@ -42,8 +43,18 @@ class OrdersDAO(BaseDAO):
             session.add(orders_item)
 
             # Удаляем товары из таблицы shopping_carts
-            delete_query = delete(ShoppingCarts).where(ShoppingCarts.user_id == user_id)
-            await session.execute(delete_query)
+            delete_query_cart = delete(ShoppingCarts).where(ShoppingCarts.user_id == user_id)
+
+            await session.execute(delete_query_cart)
+
+            # Удаляем товары из таблицы products
+            for item in orders_item.order_items:
+                update_query = (
+                    update(Products)
+                    .where(Products.product_id == item["product_id"])
+                    .values(product_quantity=Products.product_quantity - item["quantity"])
+                )
+                await session.execute(update_query)
 
             await session.commit()
             await session.refresh(orders_item)
