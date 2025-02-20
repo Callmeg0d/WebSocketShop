@@ -51,3 +51,19 @@ class CannotMakeOrderWithoutAddress(ShopException):
 class CannotMakeOrderWithoutItems(ShopException):
     status_code = status.HTTP_400_BAD_REQUEST
     detail = "Для заказа необходимо иметь товары в коризне"
+
+
+class NotEnoughProductsInStock(ShopException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    detail = "Для заказа недостаточно товара на складе"
+
+
+class CannotHaveLessThan1Product(ShopException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    detail = "Невозможно иметь менее одного товара в корзине"
+
+
+class NeedToHaveAProductToIncreaseItsQuantity(ShopException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    detail = "Для увеличения количетсва товара, он должен находится в корзине"
+
