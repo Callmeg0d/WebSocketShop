@@ -16,8 +16,6 @@ class CartsDAO(BaseDAO):
                 select(Products.price, Products.product_quantity).where(Products.product_id == product_id)
             )
             product = result.first()
-            if not product or product.product_quantity < quantity:
-                raise ValueError("Недостаточно товара на складе")
 
             price = product.price
             total_cost = price * quantity
@@ -58,7 +56,8 @@ class CartsDAO(BaseDAO):
                     Products.description,
                     Products.price,
                     ShoppingCarts.quantity,
-                    (Products.price * ShoppingCarts.quantity).label("total_cost")
+                    (Products.price * ShoppingCarts.quantity).label("total_cost"),
+                    Products.product_quantity
                 )
                 .join(Products, ShoppingCarts.product_id == Products.product_id)
                 .where(ShoppingCarts.user_id == user_id)
@@ -76,3 +75,16 @@ class CartsDAO(BaseDAO):
             result = await session.execute(query)
             await session.commit()
             return result.rowcount > 0
+
+    @classmethod
+    async def update_quantity(cls, user_id, product_id, quantity):
+        async with async_session_maker() as session:
+            query = (
+                update(ShoppingCarts)
+                .where(ShoppingCarts.user_id == user_id, ShoppingCarts.product_id == product_id)
+                .values(quantity=quantity, total_cost=Products.price * quantity)
+                .returning(ShoppingCarts.total_cost)
+            )
+            result = await session.execute(query)
+            await session.commit()
+            return result.fetchone()

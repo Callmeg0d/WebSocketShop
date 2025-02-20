@@ -6,3 +6,9 @@ class SShoppingCart(BaseModel):
     quantity: int
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class UpdateQuantityRequest(BaseModel):
+    quantity: int
+
+    model_config = ConfigDict(from_attributes=True)
