@@ -15,8 +15,16 @@
                 <div class="text-center mt-2">
                     <h2 class="text-xl font-semibold">{{ item.name }}</h2>
                     <p class="text-gray-600 text-sm">{{ item.description }}</p>
-                    <p class="text-lg font-bold mt-2">{{ item.price }} ₽ x {{ item.quantity }}</p>
-                    <p class="text-lg font-bold text-red-500">Всего: {{ item.total_cost }} ₽</p>
+                    <p class="text-md text-blue-600">Остаток на складе: <strong>{{ item.product_quantity }}</strong></p>
+
+                        <button onclick="updateQuantity({{ item.product_id }}, -1)" class="qty-btn">➖</button>
+                        <input type="number" id="qty-{{ item.product_id }}"
+                               class="qty-input" value="{{ item.quantity }}"
+                               min="1" max="{{ item.product_quantity }}"
+                               oninput="manualUpdate({{ item.product_id }})">
+                        <button onclick="updateQuantity({{ item.product_id }}, 1)" class="qty-btn">➕</button>
+                    </p>
+                    <p class="text-lg font-bold text-red-500">Всего: <span id="total-{{ item.product_id }}">{{ item.total_cost }}</span> ₽</p>
                 </div>
 
                 <button onclick="removeFromCart({{ item.product_id }})"
@@ -36,44 +44,102 @@
 </div>
 
 <script>
+    async function updateQuantity(productId, change) {
+        let input = document.getElementById(`qty-${productId}`);
+        let newQuantity = parseInt(input.value) + change;
+
+        if (newQuantity < 1) newQuantity = 1;
+        if (newQuantity > input.max) newQuantity = input.max;
+
+        input.value = newQuantity;
+        await updateCart(productId, newQuantity);
+    }
+
+    async function manualUpdate(productId) {
+        let input = document.getElementById(`qty-${productId}`);
+        let newQuantity = parseInt(input.value);
+
+        if (isNaN(newQuantity) || newQuantity < 1) newQuantity = 1;
+        if (newQuantity > input.max) newQuantity = input.max;
+
+        input.value = newQuantity;
+        await updateCart(productId, newQuantity);
+    }
+
+    async function updateCart(productId, quantity) {
+        const response = await fetch(`/cart/update/${productId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ quantity: quantity })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            document.getElementById(`total-${productId}`).textContent = data.total_cost;
+        } else {
+            alert("Ошибка обновления количества товара!");
+        }
+    }
+
     async function removeFromCart(productId) {
         const response = await fetch(`/cart/remove/${productId}`, { method: 'DELETE' });
         if (response.ok) {
-            console.log(`Товар с ID ${productId} удален`);
             location.reload();
         } else {
             alert("Ошибка при удалении товара!");
         }
     }
-</script>>
 
-<script>
     async function checkout() {
-    const response = await fetch("/orders/checkout", {
-        method: "POST",
-        credentials: "include"
-    });
+        const response = await fetch("/orders/checkout", {
+            method: "POST",
+            credentials: "include"
+        });
 
-    if (response.ok) {
-        window.location.href = "/pages/products";
-    } else {
-        alert("Ошибка при оформлении заказа.");
+        if (response.ok) {
+            alert("Заказ успешно оформлен!");
+            location.reload();
+        } else {
+            const errorData = await response.json();
+            alert(errorData.detail);
+        }
     }
-}
 </script>
 
 <style>
+    .qty-btn {
+        background-color: #ddd;
+        border: none;
+        padding: 5px 10px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .qty-btn:hover {
+        background-color: #bbb;
+    }
+
+    .qty-input {
+        width: 50px;
+        text-align: center;
+        border: 1px solid #ddd;
+        padding: 5px;
+        margin: 0 5px;
+        font-size: 16px;
+    }
+
     .btn__del {
         background-color: transparent;
         border: none;
-        font-size: 22px; /* Размер иконки */
+        font-size: 22px;
         cursor: pointer;
         transition: transform 0.2s, color 0.2s;
     }
 
     .btn__del:hover {
         color: #cc0000;
-        transform: scale(1.2); /* Увеличение при наведении */
+        transform: scale(1.2);
     }
 </style>
 {% endblock %}
