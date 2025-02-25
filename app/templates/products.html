@@ -25,6 +25,37 @@
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+
+        .search-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+            gap: 10px;
+        }
+
+        #searchInput {
+            width: 50%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px 0 0 5px;
+            outline: none;
+        }
+
+        .search-button {
+            padding: 10px 15px;
+            background-color: #28a745;
+            border: none;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+        }
+
+        .search-button img {
+            width: 20px;
+            height: 20px;
+        }
+
         .product-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -81,6 +112,7 @@
         }
     </style>
 </head>
+
 {% extends "base.html" %}
 
 {% block head %}
@@ -111,50 +143,67 @@
         });
     </script>
 
-    <script>
-        async function addToCart(productId) {
-            const quantity = 1;
-            const url = "/cart";
-
-            await fetch(url, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    product_id: productId,
-                    quantity: quantity
-                })
-            });
-        }
-    </script>
-
     <style>
-        .search-container {
-            display: flex;
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
             justify-content: center;
+            max-width: 1280px;
+            margin: auto;
+        }
+
+        .product-card {
+            display: flex;
+            flex-direction: column;
             align-items: center;
-            margin-bottom: 20px;
-            gap: 10px;
-        }
-        #searchInput {
-            width: 50%;
-            padding: 10px;
-            font-size: 16px;
+            background: #fff;
             border: 1px solid #ddd;
-            border-radius: 5px 0 0 5px;
-            outline: none;
-        }
-        .search-button {
-            padding: 10px 15px;
-            background-color: #28a745;
-            border: none;
-            border-radius: 0 5px 5px 0;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: box-shadow 0.3s, transform 0.2s;
+            width: 100%;
+            max-width: 300px;
             cursor: pointer;
+            text-decoration: none;
+            color: inherit;
         }
-        .search-button img {
-            width: 20px;
-            height: 20px;
+
+        .product-card:hover {
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+            transform: scale(1.02);
+        }
+
+        .product-card img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+        }
+
+        .product-info {
+            padding: 15px;
+            text-align: center;
+        }
+
+        .product-info h1 {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .product-info h4 {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 15px;
         }
     </style>
 {% endblock %}
@@ -167,20 +216,19 @@
     </div>
 
     <div class="product-grid">
-        {% for product in products %}
-        <div class="product-card">
-            <img src="{{ url_for('static', path='images/' + product.product_id|string + '.webp') }}" alt="Фото товара">
-            <div class="product-info">
-                <h1>{{ product.name }}</h1>
-                <h4>{{ product.description }}</h4>
-                <h3>{{ product.price }}</h3>
-                <p><strong>В наличии:</strong> {{ product.product_quantity }}</p>
-                <button onclick="addToCart({{ product.product_id }})" class="add-to-cart">
-                    Добавить в корзину
-                </button>
-            </div>
+    {% for product in products %}
+    <a href="{{ url_for('get_product_detail_page', product_id=product.product_id) }}" class="product-card">
+        <img src="{{ url_for('static', path='images/' + product.product_id|string + '.webp') }}"
+                         alt="Фото товара"
+                         class="w-full h-40 object-contain rounded-md">
+        <div class="product-info">
+            <h1>{{ product.name }}</h1>
+            <h4>{{ product.description }}</h4>
+            <h3>{{ product.price }} ₽</h3>
+            <p><strong>В наличии:</strong> {{ product.product_quantity }}</p>
         </div>
-        {% endfor %}
+    </a>
+    {% endfor %}
     </div>
 </div>
 {% endblock %}
