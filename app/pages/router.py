@@ -2,7 +2,10 @@ from fastapi import APIRouter, Depends
 from fastapi.templating import Jinja2Templates
 from fastapi import Request
 from fastapi.responses import HTMLResponse
+
+from app.products.dao import ProductDAO
 from app.products.router import get_products
+from app.reviews.dao import ReviewsDAO
 from app.shopping_carts.dao import CartsDAO
 from app.users.dependencies import get_current_user
 from app.users.models import Users
@@ -40,3 +43,14 @@ async def get_product_page(
 async def get_cart_page(request: Request, user: Users = Depends(get_current_user)):
     cart_items = await CartsDAO.get_cart_items(user.id)
     return templates.TemplateResponse("cart.html", {"request": request, "cart_items": cart_items})
+
+
+@router.get("/product/{product_id}")
+async def get_product_detail_page(request: Request, product_id: int):
+    product = await ProductDAO.get_product_by_id(product_id)
+    reviews = await ReviewsDAO.get_reviews_by_product_id(product_id)
+    return templates.TemplateResponse("product_detail.html", {
+        "request": request,
+        "product": product,
+        "reviews": reviews
+    })

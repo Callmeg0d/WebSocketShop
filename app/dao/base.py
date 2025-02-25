@@ -1,6 +1,6 @@
 from app.database import async_session_maker
 
-from sqlalchemy import select, delete, desc, asc
+from sqlalchemy import select, delete, asc
 
 
 class BaseDAO:
