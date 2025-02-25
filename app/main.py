@@ -12,7 +12,7 @@ from fastapi_cache.decorator import cache
 from fastapi_cache.backends.redis import RedisBackend
 from redis import asyncio as aioredis
 from contextlib import asynccontextmanager
-
+from app.reviews.router import router as router_reviews
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -28,6 +28,7 @@ app.include_router(router_users)
 app.include_router(router_products)
 app.include_router(router_orders)
 app.include_router(router_shopping_carts)
+app.include_router(router_reviews)
 app.include_router(router_pages)
 app.include_router(router_images)
 
