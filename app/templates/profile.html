@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+    .profile-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .profile-title {
+        font-size: 2rem;
+        margin-bottom: 20px;
+    }
+
+    .profile-info, .orders-container {
+        background-color: #f9f9f9;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+
+    .profile-info h3, .orders-container h3 {
+        margin-bottom: 15px;
+    }
+
+    .profile-actions, .logout-actions {
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .logout-button, .edit-profile-button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background 0.3s;
+    }
+
+    .edit-profile-button {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .edit-profile-button:hover {
+        background-color: #0056b3;
+    }
+
+    .logout-button {
+        background-color: #dc3545;
+        color: white;
+        margin-top: 10px;
+    }
+
+    .logout-button:hover {
+        background-color: #b02a37;
+    }
+
+    .orders-list {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .order-item {
+        background-color: #fff;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        border: 1px solid #ddd;
+    }
+</style>
+
+<script>
+    async function checkAndRefreshToken() {
+        const accessToken = getCookie('access_token');
+        const refreshToken = getCookie('refresh_token');
+
+        if (accessToken && refreshToken) {
+            try {
+                const response = await fetch("/auth/refresh", {
+                    method: 'POST',
+                    body: JSON.stringify({ token: refreshToken }),
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.cookie = `access_token=${data.access_token}; path=/; max-age=18000; HttpOnly; SameSite=Lax`;
+                    document.cookie = `refresh_token=${data.refresh_token}; path=/; max-age=604800; HttpOnly; SameSite=Lax`;
+                } else {
+                    console.log("Токен истёк или ошибка при обновлении");
+                    window.location.href = "/login";  // Переход на страницу логина
+                }
+            } catch (error) {
+                console.error("Ошибка при обновлении токенов:", error);
+            }
+        }
+    }
+    document.addEventListener("DOMContentLoaded", checkAndRefreshToken);
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="profile-container">
+        <h1 class="profile-title">Профиль пользователя</h1>
+
+        <div class="profile-info">
+            <h3>Информация</h3>
+            <p><strong>Имя:</strong> {{ user.name }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Адрес доставки:</strong> {{ user.delivery_address or "Не указан" }}</p>
+            <p><strong>Дата регистрации:</strong> {{ user.created_at }}</p>
+        </div>
+
+        <div class="orders-container">
+            <h3>Ваши заказы</h3>
+            <ul class="orders-list" id="orders-list">
+            </ul>
+        </div>
+
+        <div class="profile-actions">
+            <a href="/pages/profile/edit" class="edit-profile-button">Редактировать профиль</a>
+        </div>
+
+        <div class="logout-actions">
+            <button id="logout-button" class="logout-button">Выйти из профиля</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById("logout-button").addEventListener("click", async function() {
+        try {
+            const response = await fetch("/auth/logout", {
+                method: "POST",
+                credentials: "include",
+            });
+
+            if (response.ok) {
+                window.location.href = "/pages/login";
+            } else {
+                alert("Ошибка при выходе.");
+            }
+        } catch (error) {
+            console.error("Ошибка при выходе:", error);
+        }
+    });
+
+    async function loadOrders() {
+        try {
+            const response = await fetch("/orders", {
+                method: "GET",
+                credentials: "include",
+            });
+
+            if (response.ok) {
+                const orders = await response.json();
+                const ordersList = document.getElementById("orders-list");
+
+                if (orders.length === 0) {
+                    ordersList.innerHTML = "<li>У вас пока нет заказов.</li>";
+                    return;
+                }
+
+                orders.forEach(order => {
+                    const orderItem = document.createElement("li");
+                    orderItem.classList.add("order-item");
+
+                    orderItem.innerHTML = `
+                        <p><strong>Номер заказа:</strong> ${order.order_id}</p>
+                        <p><strong>Дата заказа:</strong> ${new Date(order.created_at).toLocaleDateString()}</p>
+                        <p><strong>Статус:</strong> ${order.status}</p>
+                        <p><strong>Адрес доставки:</strong> ${order.delivery_address}</p>
+                        <p><strong>Сумма:</strong> ${order.total_cost} ₽</p>
+                        <h4>Товары в заказе:</h4>
+                        <ul>
+                            ${order.order_items.map(item => {
+                                return `<li>Продукт ID: ${item.product_id}, Количество: ${item.quantity}</li>`;
+                            }).join('')}
+                        </ul>
+                    `;
+                    ordersList.appendChild(orderItem);
+                });
+            } else {
+                console.error("Ошибка при получении заказов");
+            }
+        } catch (error) {
+            console.error("Ошибка при загрузке заказов:", error);
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", loadOrders);
+</script>
+{% endblock %}

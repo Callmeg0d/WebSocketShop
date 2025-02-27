@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends
 from fastapi.templating import Jinja2Templates
 from fastapi import Request
 from fastapi.responses import HTMLResponse
-
 from app.products.dao import ProductDAO
 from app.products.router import get_products
 from app.reviews.dao import ReviewsDAO
@@ -54,3 +53,8 @@ async def get_product_detail_page(request: Request, product_id: int):
         "product": product,
         "reviews": reviews
     })
+
+
+@router.get("/profile")
+async def get_profile(request: Request, user: Users = Depends(get_current_user)):
+    return templates.TemplateResponse("profile.html", {"request": request, "user": user})
