@@ -18,7 +18,7 @@ async def get_cart(user: Users = Depends(get_current_user)):
     return await CartsDAO.find_all(user_id=user.id)
 
 
-@router.post("")
+@router.post("/add")
 async def add_to_cart(user: Users = Depends(get_current_user),
                       cart: SShoppingCart = Body(...)):
     result = await CartsDAO.add_to_cart(product_id=cart.product_id, user_id=user.id, quantity=cart.quantity)
