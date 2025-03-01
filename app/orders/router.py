@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from app.orders.dao import OrdersDAO
 from app.orders.schemas import SOrderResponse
+from app.products.dao import ProductDAO
 from app.tasks.tasks import send_order_confirmation_email
 from app.users.dependencies import get_current_user
 from app.users.models import Users
@@ -15,7 +16,24 @@ router = APIRouter(
 
 @router.get("")
 async def get_orders(user: Users = Depends(get_current_user)):
-    return await OrdersDAO.find_all(user_id=user.id)
+    orders = await OrdersDAO.find_all(user_id=user.id)
+
+    for order in orders:
+        if "order_items" not in order or not order["order_items"]:
+            continue  # Пропускаем заказ, если в нем нет товаров
+
+        for item in order["order_items"]:
+            product_id = item.get("product_id")
+            if product_id is None:
+                continue
+
+            product = await ProductDAO.find_one_or_none(product_id=product_id)
+
+            product_image_url = f"/static/images/{product['image']}.webp"
+
+            item["product_image_url"] = product_image_url
+
+    return orders
 
 
 @router.post("/checkout")
