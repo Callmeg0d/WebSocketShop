@@ -4,14 +4,14 @@ from jose import jwt, JWTError
 import jwt
 from app.config import settings
 from app.users.auth import get_password_hash, create_access_token, create_refresh_token
-from app.users.dependencies import get_refresh_token
+from app.users.dependencies import get_refresh_token, get_current_user
 from app.users.schemas import SUserAuth
 from app.users.dao import UsersDAO
 from app.users.auth import authenticate_user
 from app.exceptions import UserAlreadyExistsException, IncorrectEmailOrPasswordException
 from fastapi import Request
 from app.exceptions import TokenExpiredException
-from jwt.exceptions import  InvalidTokenError
+from jwt.exceptions import InvalidTokenError
 from datetime import datetime, timedelta
 from app.tasks.tasks import send_registration_confirmation_email
 
@@ -51,8 +51,10 @@ async def login_user(response: Response, user_data: SUserAuth):
     access_token = create_access_token({"sub": str(user.id)})
     refresh_token = create_refresh_token({"sub": str(user.id)})
 
-    response.set_cookie("access_token", access_token, max_age=1800, httponly=True, samesite="lax")
-    response.set_cookie("refresh_token", refresh_token, max_age=604800, httponly=True, samesite="lax")
+    response.set_cookie("access_token", access_token, max_age=1800, httponly=True, samesite="lax",
+                        secure=False, path="/")
+    response.set_cookie("refresh_token", refresh_token, max_age=604800, httponly=True, samesite="lax",
+                        secure=False, path="/")
 
     return {"access_token": access_token, "refresh_token": refresh_token}
 
@@ -60,6 +62,8 @@ async def login_user(response: Response, user_data: SUserAuth):
 @router_auth.post("/logout")
 async def logout_user(response: Response):
     response.delete_cookie("access_token")
+    response.delete_cookie("refresh_token")
+    return {"message": "User logged out successfully"}
 
 
 @router_auth.post("/refresh")
@@ -88,10 +92,23 @@ async def refresh_token(response: Response, token: str = Depends(get_refresh_tok
         settings.SECRET_KEY, algorithm=settings.ALGORITHM
     )
 
-    response.delete_cookie("access_token")
-    response.delete_cookie("refresh_token")
+    refresh_expire_time = datetime.utcfromtimestamp(expire)
+    if refresh_expire_time - datetime.utcnow() < timedelta(minutes=2):
+        new_refresh_token = jwt.encode(
+            {"sub": str(user.id), "exp": datetime.utcnow() + timedelta(days=7)},
+            settings.SECRET_KEY, algorithm=settings.ALGORITHM
+        )
+        response.set_cookie("refresh_token", new_refresh_token, max_age=604800, httponly=True,
+                            samesite="lax", path="/" ,secure=False)
+    else:
+        new_refresh_token = token  # Оставляем старый refresh_token
 
-    response.set_cookie("access_token", new_access_token, max_age=1800, httponly=True, samesite="lax")
-    response.set_cookie("refresh_token", token, max_age=604800, httponly=True, samesite="lax")
+    response.set_cookie("access_token", new_access_token, max_age=1800, httponly=True, samesite="lax",
+                        path="/", secure=False)
 
-    return {"access_token": new_access_token}
+    return {"access_token": new_access_token, "refresh_token": new_refresh_token}
+
+
+@router_auth.get("/me")
+async def get_me(user=Depends(get_current_user)):
+    return JSONResponse(content={"id": user.id, "email": user.email})
