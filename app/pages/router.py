@@ -41,7 +41,12 @@ async def get_product_page(
 @router.get("/cart")
 async def get_cart_page(request: Request, user: Users = Depends(get_current_user)):
     cart_items = await CartsDAO.get_cart_items(user.id)
-    return templates.TemplateResponse("cart.html", {"request": request, "cart_items": cart_items})
+    total_cart_cost = sum(item.total_cost for item in cart_items)
+    return templates.TemplateResponse("cart.html", {
+        "request": request,
+        "cart_items": cart_items,
+        "total_cart_cost": total_cart_cost
+    })
 
 
 @router.get("/product/{product_id}")
