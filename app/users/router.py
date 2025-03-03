@@ -1,11 +1,11 @@
 from fastapi.responses import JSONResponse
-from fastapi import APIRouter, Response, Depends
+from fastapi import APIRouter, Response, Depends, Body
 from jose import jwt, JWTError
 import jwt
 from app.config import settings
 from app.users.auth import get_password_hash, create_access_token, create_refresh_token
 from app.users.dependencies import get_refresh_token, get_current_user
-from app.users.schemas import SUserAuth
+from app.users.schemas import SUserAuth, SChangeAddress, SChangeName
 from app.users.dao import UsersDAO
 from app.users.auth import authenticate_user
 from app.exceptions import UserAlreadyExistsException, IncorrectEmailOrPasswordException
@@ -112,3 +112,15 @@ async def refresh_token(response: Response, token: str = Depends(get_refresh_tok
 @router_auth.get("/me")
 async def get_me(user=Depends(get_current_user)):
     return JSONResponse(content={"id": user.id, "email": user.email})
+
+
+@router_users.post("/address")
+async def change_address(user=Depends(get_current_user), address: SChangeAddress = Body(...)):
+    result = await UsersDAO.change_address(user_id=user.id, new_address=address.new_address)
+    return result
+
+
+@router_users.post("/name")
+async def change_name(user=Depends(get_current_user), name: SChangeName = Body(...)):
+    result = await UsersDAO.change_name(user_id=user.id, new_name=name.new_name)
+    return result
