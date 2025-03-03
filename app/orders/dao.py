@@ -2,6 +2,7 @@ from sqlalchemy import select, func, delete, literal_column, update, case
 
 from app.dao.base import BaseDAO
 from app.exceptions import NotEnoughProductsInStock
+from app.websockets import send_product_update
 from app.orders.models import Orders
 from app.database import async_session_maker
 from app.products.models import Products
@@ -90,4 +91,16 @@ class OrdersDAO(BaseDAO):
 
             await session.commit()
             await session.refresh(orders_item)
+
+            for item in cart_items:
+                product_id = item["product_id"]
+
+                # Получаем новый остаток товара
+                stock_query = select(Products.product_quantity).where(Products.product_id == product_id)
+                stock_result = await session.execute(stock_query)
+                new_quantity = stock_result.scalar_one_or_none()  # Берём новое количество
+
+                if new_quantity is not None:
+                    await send_product_update(product_id, new_quantity)
+
             return orders_item
