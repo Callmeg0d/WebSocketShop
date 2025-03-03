@@ -18,6 +18,7 @@ class Users(Base):
     email: Mapped[str] = mapped_column()
     hashed_password: Mapped[str] = mapped_column()
     delivery_address: Mapped[str] = mapped_column()
+    name: Mapped[str] = mapped_column()
 
     reviews: Mapped[list["Reviews"]] = relationship(back_populates="user")
     shopping_carts: Mapped[list["ShoppingCarts"]] = relationship(back_populates="user")
