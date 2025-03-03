@@ -44,4 +44,10 @@ async def update_cart_item(
     if not updated_item:
         raise NeedToHaveAProductToIncreaseItsQuantity
 
-    return {"total_cost": updated_item.total_cost}
+    cart_items = await CartsDAO.get_cart_items(user.id)
+    total_cart_cost = sum(item.total_cost for item in cart_items)
+
+    return {
+        "total_cost": updated_item.total_cost,
+        "cart_total": total_cart_cost
+    }
