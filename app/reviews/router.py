@@ -11,7 +11,7 @@ router = APIRouter(
 )
 
 
-@router.post("")
+@router.post("/")
 async def leave_review(user: Users = Depends(get_current_user),
                        review: SReviews = Body(...)):
     await ReviewsDAO.add_review(
