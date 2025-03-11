@@ -24,6 +24,7 @@ class UsersDAO(BaseDAO):
                 update(Users).where(Users.id == user_id).values(delivery_address=new_address)
             )
             await session.commit()
+            return new_address
 
     @classmethod
     async def change_name(cls, new_name: str, user_id: int):
@@ -32,3 +33,4 @@ class UsersDAO(BaseDAO):
                 update(Users).where(Users.id == user_id).values(name=new_name)
             )
             await session.commit()
+            return new_name
