@@ -65,10 +65,10 @@ class CannotHaveLessThan1Product(ShopException):
 
 class NeedToHaveAProductToIncreaseItsQuantity(ShopException):
     status_code = status.HTTP_400_BAD_REQUEST
-    detail = "Для увеличения количетсва товара, он должен находится в корзине"
+    detail = "Для увеличения количества товара, он должен находиться в корзине"
 
 
 class CannotFindProductWithThisId(ShopException):
     status_code = status.HTTP_404_NOT_FOUND
-    detail = "Товара с таким id не сущесвтует"
+    detail = "Товара с таким id не существует"
 
