@@ -21,8 +21,8 @@ async def get_cart(user: Users = Depends(get_current_user)):
 @router.post("/add")
 async def add_to_cart(user: Users = Depends(get_current_user),
                       cart: SShoppingCart = Body(...)):
-    result = await CartsDAO.add_to_cart(product_id=cart.product_id, user_id=user.id, quantity=cart.quantity)
-    return result
+    await CartsDAO.add_to_cart(product_id=cart.product_id, user_id=user.id, quantity=cart.quantity)
+    return {"success": True}
 
 
 @router.delete("/remove/{product_id}")

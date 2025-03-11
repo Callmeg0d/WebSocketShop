@@ -45,6 +45,7 @@ class CartsDAO(BaseDAO):
                 )
                 session.add(new_cart_item)
             await session.commit()
+            return True
 
     @classmethod
     async def get_cart_items(cls, user_id: int):
@@ -82,7 +83,8 @@ class CartsDAO(BaseDAO):
             query = (
                 update(ShoppingCarts)
                 .where(ShoppingCarts.user_id == user_id, ShoppingCarts.product_id == product_id)
-                .values(quantity=quantity, total_cost=Products.price * quantity)
+                .values(quantity=quantity, total_cost=select(Products.price * quantity)
+                        .where(Products.product_id == product_id).scalar_subquery())
                 .returning(ShoppingCarts.total_cost)
             )
             result = await session.execute(query)
