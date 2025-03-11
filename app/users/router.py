@@ -111,7 +111,8 @@ async def refresh_token(response: Response, token: str = Depends(get_refresh_tok
 
 @router_auth.get("/me")
 async def get_me(user=Depends(get_current_user)):
-    return JSONResponse(content={"id": user.id, "email": user.email})
+    return JSONResponse(content={"id": user.id, "email": user.email,
+                                 "name": user.name, "delivery_address": user.delivery_address})
 
 
 @router_users.post("/address")
