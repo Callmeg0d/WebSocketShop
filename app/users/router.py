@@ -1,7 +1,6 @@
 from fastapi.responses import JSONResponse
 from fastapi import APIRouter, Response, Depends, Body
-from jose import jwt, JWTError
-import jwt
+from jose import jwt as jose_jwt, JWTError
 from app.config import settings
 from app.users.auth import get_password_hash, create_access_token, create_refresh_token
 from app.users.dependencies import get_refresh_token, get_current_user
@@ -11,7 +10,6 @@ from app.users.auth import authenticate_user
 from app.exceptions import UserAlreadyExistsException, IncorrectEmailOrPasswordException
 from fastapi import Request
 from app.exceptions import TokenExpiredException
-from jwt.exceptions import InvalidTokenError
 from datetime import datetime, timedelta
 from app.tasks.tasks import send_registration_confirmation_email
 
@@ -69,9 +67,9 @@ async def logout_user(response: Response):
 @router_auth.post("/refresh")
 async def refresh_token(response: Response, token: str = Depends(get_refresh_token)):
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, settings.ALGORITHM)
+        payload = jose_jwt.decode(token, settings.SECRET_KEY, settings.ALGORITHM)
     except JWTError:
-        raise InvalidTokenError
+        raise JWTError
 
     # Проверяем, не истёк ли refresh токен
     expire = payload.get("exp")
@@ -80,21 +78,21 @@ async def refresh_token(response: Response, token: str = Depends(get_refresh_tok
 
     user_id = payload.get("sub")
     if not user_id:
-        raise InvalidTokenError
+        raise JWTError
 
     user = await UsersDAO.find_one_or_none(id=int(user_id))
     if not user or user_id == "None":
-        raise InvalidTokenError
+        raise JWTError
 
     # Создаём новый access token
-    new_access_token = jwt.encode(
+    new_access_token = jose_jwt.encode(
         {"sub": str(user.id), "exp": datetime.utcnow() + timedelta(minutes=30)},
         settings.SECRET_KEY, algorithm=settings.ALGORITHM
     )
 
     refresh_expire_time = datetime.utcfromtimestamp(expire)
     if refresh_expire_time - datetime.utcnow() < timedelta(minutes=2):
-        new_refresh_token = jwt.encode(
+        new_refresh_token = jose_jwt.encode(
             {"sub": str(user.id), "exp": datetime.utcnow() + timedelta(days=7)},
             settings.SECRET_KEY, algorithm=settings.ALGORITHM
         )
