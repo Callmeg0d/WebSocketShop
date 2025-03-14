@@ -1,4 +1,6 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+
+from app.config import settings
 from app.products.router import router as router_products
 from app.users.router import router_auth as router_users_auth
 from app.users.router import router_users as router_users
@@ -19,7 +21,7 @@ from app.websockets import manager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    redis = aioredis.from_url("redis://localhost")
+    redis = aioredis.from_url(f"redis://{settings.REDIS_HOST}")
     FastAPICache.init(RedisBackend(redis), prefix="cache")
     yield
 
@@ -38,7 +40,9 @@ app.include_router(router_images)
 # Подключение CORS, чтобы запросы к API могли приходить из браузера
 origins = [
     "http://127.0.0.1:8000",
-    "http://localhost:8000"
+    "http://localhost:8000",
+    "http://localhost:7777",
+
 ]
 
 app.add_middleware(
