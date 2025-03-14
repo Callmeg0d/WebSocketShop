@@ -92,7 +92,7 @@
         }
     </style>
     <script>
-        const socket = new WebSocket("ws://localhost:8000/ws");
+        const socket = new WebSocket("ws://localhost:7777/ws");
         socket.onopen = () => console.log("WebSocket подключен");
         socket.onmessage = (event) => {
             const data = JSON.parse(event.data);

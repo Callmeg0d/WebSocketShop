@@ -9,7 +9,7 @@
 
     <script>
         async function logoutUser() {
-            const url = "http://localhost:8000/auth/logout";
+            const url = "http://localhost:7777/auth/logout";
             await fetch(url, {
                 method: 'POST',
                 credentials: 'include'
@@ -32,7 +32,7 @@
 
                 if (response.status === 401) {
 
-                    let refreshResponse = await fetch("http://localhost:8000/auth/refresh", {
+                    let refreshResponse = await fetch("http://localhost:7777/auth/refresh", {
                         method: "POST",
                         credentials: "include",
                     });
@@ -51,7 +51,7 @@
             // Функция проверки авторизации
             async function checkAuth() {
                 try {
-                    let response = await fetchWithAuth("http://localhost:8000/auth/me");
+                    let response = await fetchWithAuth("http://localhost:7777/auth/me");
 
                     if (response.ok) {
                         authButton.innerHTML = `<a href="/pages/profile" class="bg-green-500 text-white px-4 py-2 rounded">Профиль</a>`;
