@@ -11,5 +11,3 @@ class Categories(Base):
     __tablename__ = "categories"
 
     category_name: Mapped[str] = mapped_column(primary_key=True)
-
-    products: Mapped[list["Products"]] = relationship("Products", back_populates="category")
