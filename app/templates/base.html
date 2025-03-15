@@ -25,48 +25,73 @@
         document.addEventListener("DOMContentLoaded", async function () {
             const authButton = document.getElementById("auth-button");
 
-            async function fetchWithAuth(url, options = {}) {
-                options.credentials = "include";
+            // Список защищённых страниц
+            const protectedPages = ["/pages/profile", "/pages/cart"];
 
-                let response = await fetch(url, options);
-
-                if (response.status === 401) {
-
-                    let refreshResponse = await fetch("http://localhost:7777/auth/refresh", {
-                        method: "POST",
-                        credentials: "include",
-                    });
-
-                    if (refreshResponse.ok) {
-                        return fetch(url, options);
-                    } else {
-                        authButton.innerHTML = `<a href="/pages/login" class="bg-blue-500 text-white px-4 py-2 rounded">Войти</a>`;
-                        return;
-                    }
-                }
-
-                return response;
-            }
-
-            // Функция проверки авторизации
             async function checkAuth() {
                 try {
-                    let response = await fetchWithAuth("http://localhost:7777/auth/me");
+                    let response = await fetch("http://localhost:7777/auth/me", {
+                        method: 'GET',
+                        credentials: 'include'
+                    });
 
                     if (response.ok) {
-                        authButton.innerHTML = `<a href="/pages/profile" class="bg-green-500 text-white px-4 py-2 rounded">Профиль</a>`;
-                    } else {
-                        authButton.innerHTML = `<a href="/pages/login" class="bg-blue-500 text-white px-4 py-2 rounded">Войти</a>`;
+                        authButton.innerHTML = '<a href="/pages/profile" class="bg-green-500 text-white px-4 py-2 rounded">Профиль</a>';
+                    } else if (response.status === 401) {
+                        const refreshed = await refreshAccessToken();
+                        if (refreshed) {
+                            return checkAuth();
+                        }
+                        authButton.innerHTML = '<a href="/pages/login" class="bg-blue-500 text-white px-4 py-2 rounded">Войти</a>';
                     }
                 } catch (error) {
-                    console.error("Ошибка при проверке авторизации:", error);
-                    authButton.innerHTML = `<a href="/pages/login" class="bg-blue-500 text-white px-4 py-2 rounded">Войти</a>`;
+                    console.error("Ошибка авторизации:", error);
+                    authButton.innerHTML = '<a href="/pages/login" class="bg-blue-500 text-white px-4 py-2 rounded">Войти</a>';
                 }
             }
 
-            checkAuth();
+            async function refreshAccessToken() {
+                try {
+                    let response = await fetch("http://localhost:7777/auth/refresh", {
+                        method: 'POST',
+                        credentials: 'include'
+                    });
 
-            document.body.addEventListener('click', async function(event) {
+                    if (response.ok) {
+                        console.log("Access token обновлён!");
+                        return true;
+                    } else {
+                        console.warn("Ошибка обновления токена. Необходимо войти снова.");
+                        return false;
+                    }
+                } catch (error) {
+                    console.error("Ошибка запроса обновления токена:", error);
+                    return false;
+                }
+            }
+
+            async function checkIfProtectedPage() {
+                if (protectedPages.includes(window.location.pathname)) {
+                    let response = await fetch("http://localhost:7777/auth/me", {
+                        method: 'GET',
+                        credentials: 'include'
+                    });
+
+                    if (response.status === 401) {
+                        const tokenRefreshed = await refreshAccessToken();
+                        if (tokenRefreshed) {
+                            window.location.reload();
+                        } else {
+                            window.location.href = "/pages/login";
+                        }
+                    }
+                }
+            }
+
+            await checkAuth();
+            await checkIfProtectedPage();
+
+            document.body.addEventListener('click', async function (event) {
                 const link = event.target.closest("a");
 
                 if (link && link.href && link.href.startsWith(window.location.origin)) {
