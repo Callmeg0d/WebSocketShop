@@ -29,7 +29,8 @@
 ### Мониторинг и визуализация данных
 - **Grafana**
 - **Prometheus**
-
+### Мониторинг ошибок
+- **Sentry**
 
 ## Подключение через Docker
 - docker-compose up -d --build
