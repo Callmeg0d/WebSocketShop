@@ -1,5 +1,5 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-
+import sentry_sdk
 from app.config import settings
 from app.products.router import router as router_products
 from app.users.router import router_auth as router_users_auth
@@ -24,6 +24,15 @@ async def lifespan(app: FastAPI):
     redis = aioredis.from_url(f"redis://{settings.REDIS_HOST}")
     FastAPICache.init(RedisBackend(redis), prefix="cache")
     yield
+
+
+sentry_sdk.init(
+    dsn = settings.SENTRY_URL,
+    traces_sample_rate=1.0,
+    _experiments={
+        "continuous_profiling_auto_start": True,
+    },
+)
 
 app = FastAPI(lifespan=lifespan)
 

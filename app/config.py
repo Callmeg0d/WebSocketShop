@@ -5,7 +5,7 @@ from typing import Literal
 class Settings(BaseSettings):
     MODE: Literal["DEV", "TEST", "PROD"]
     #LOG_LEVEL: str
-    #SENTRY_URL: str
+    SENTRY_URL: str
 
     DB_HOST: str
     DB_PORT: int
