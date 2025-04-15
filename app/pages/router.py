@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends
-from fastapi.templating import Jinja2Templates
-from fastapi import Request
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+
 from app.products.dao import ProductDAO
 from app.products.router import get_products
 from app.reviews.dao import ReviewsDAO
@@ -42,11 +42,14 @@ async def get_product_page(
 async def get_cart_page(request: Request, user: Users = Depends(get_current_user)):
     cart_items = await CartsDAO.get_cart_items(user.id)
     total_cart_cost = sum(item.total_cost for item in cart_items)
-    return templates.TemplateResponse("cart.html", {
-        "request": request,
-        "cart_items": cart_items,
-        "total_cart_cost": total_cart_cost
-    })
+    return templates.TemplateResponse(
+        "cart.html",
+        {
+            "request": request,
+            "cart_items": cart_items,
+            "total_cart_cost": total_cart_cost
+        },
+    )
 
 
 @router.get("/product/{product_id}")
@@ -62,4 +65,7 @@ async def get_product_detail_page(request: Request, product_id: int):
 
 @router.get("/profile")
 async def get_profile(request: Request, user: Users = Depends(get_current_user)):
-    return templates.TemplateResponse("profile.html", {"request": request, "user": user})
+    return (templates.TemplateResponse
+            ("profile.html",
+             {"request": request, "user": user})
+            )

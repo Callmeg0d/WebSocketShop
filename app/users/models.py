@@ -1,14 +1,15 @@
 from typing import TYPE_CHECKING
 
-from app.database import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.reviews.models import Reviews
+
+from app.database import Base
 from app.orders.models import Orders
+from app.reviews.models import Reviews
 
 if TYPE_CHECKING:
-    from app.shopping_carts.models import ShoppingCarts
-    from app.reviews.models import Reviews
     from app.orders.models import Orders
+    from app.reviews.models import Reviews
+    from app.shopping_carts.models import ShoppingCarts
 
 
 class Users(Base):

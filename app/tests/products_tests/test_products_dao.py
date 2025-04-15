@@ -1,13 +1,9 @@
 import ast
-import json
-
-from httpx import AsyncClient
 
 import pytest
+from httpx import AsyncClient
 
-from app.database import async_session_maker
 from app.products.dao import ProductDAO
-from app.products.models import Products
 
 
 @pytest.mark.asyncio

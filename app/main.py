@@ -1,22 +1,24 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from contextlib import asynccontextmanager
+
 import sentry_sdk
-from app.config import settings
-from app.products.router import router as router_products
-from app.users.router import router_auth as router_users_auth
-from app.users.router import router_users as router_users
-from app.orders.router import router as router_orders
-from app.shopping_carts.router import router as router_shopping_carts
-from app.pages.router import router as router_pages
-from app.images.router import router as router_images
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
-from redis import asyncio as aioredis
-from contextlib import asynccontextmanager
-from app.reviews.router import router as router_reviews
-from app.websockets import manager
 from prometheus_fastapi_instrumentator import Instrumentator
+from redis import asyncio as aioredis
+
+from app.config import settings
+from app.images.router import router as router_images
+from app.orders.router import router as router_orders
+from app.pages.router import router as router_pages
+from app.products.router import router as router_products
+from app.reviews.router import router as router_reviews
+from app.shopping_carts.router import router as router_shopping_carts
+from app.users.router import router_auth as router_users_auth
+from app.users.router import router_users as router_users
+from app.websockets import manager
 
 
 @asynccontextmanager
@@ -27,7 +29,7 @@ async def lifespan(app: FastAPI):
 
 
 sentry_sdk.init(
-    dsn = settings.SENTRY_URL,
+    dsn=settings.SENTRY_URL,
     traces_sample_rate=1.0,
     _experiments={
         "continuous_profiling_auto_start": True,
@@ -60,9 +62,13 @@ app.add_middleware(
     allow_origins=origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "OPTIONS", "DELETE", "PATCH", "PUT"],
-    allow_headers=["Content-Type", "Set-Cookie", "Access-Control-Allow-Headers",
-                   "Access-Control-Allow-Origin",
-                   "Authorization"],
+    allow_headers=[
+        "Content-Type",
+        "Set-Cookie",
+        "Access-Control-Allow-Headers",
+        "Access-Control-Allow-Origin",
+        "Authorization",
+    ],
 )
 
 

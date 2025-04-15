@@ -13,7 +13,12 @@ class ReviewsDAO(BaseDAO):
     async def add_review(cls, user_id: int, product_id: int, rating: int, feedback: str):
         async with async_session_maker() as session:
             await session.execute(
-                insert(Reviews).values(user_id=user_id, product_id=product_id, rating=rating, feedback=feedback)
+                insert(Reviews).values(
+                    user_id=user_id,
+                    product_id=product_id,
+                    rating=rating,
+                    feedback=feedback,
+                )
             )
             await session.commit()
 
@@ -21,8 +26,9 @@ class ReviewsDAO(BaseDAO):
     async def get_reviews_by_product_id(cls, product_id: int):
         async with async_session_maker() as session:
             result = await session.execute(
-                select(Reviews, Users.email).join(Users, Reviews.user_id == Users.id).where(
-                    Reviews.product_id == product_id)
+                select(Reviews, Users.email)
+                .join(Users, Reviews.user_id == Users.id)
+                .where(Reviews.product_id == product_id)
             )
             reviews = []
             for row in result.fetchall():

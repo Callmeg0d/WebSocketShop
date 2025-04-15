@@ -1,5 +1,5 @@
-from httpx import AsyncClient
 import pytest
+from httpx import AsyncClient
 
 
 @pytest.mark.asyncio
@@ -51,10 +51,15 @@ async def test_remove_from_cart(async_client: AsyncClient, auth_headers):
         (999, 2, 400, {"detail": "Для увеличения количества товара, он должен находиться в корзине"}),  # Продукт отсутствует
     ]
 )
-async def test_update_cart_item(async_client: AsyncClient, auth_headers, product_id, quantity, expected_status, expected_response):
+async def test_update_cart_item(async_client: AsyncClient, auth_headers,
+                                product_id, quantity, expected_status, expected_response):
     payload = {"quantity": quantity}
 
-    response = await async_client.put(f"/cart/update/{product_id}", json=payload, headers=auth_headers)
+    response = await async_client.put(
+        f"/cart/update/{product_id}",
+        json=payload,
+        headers=auth_headers,
+    )
 
     assert response.status_code == expected_status
 

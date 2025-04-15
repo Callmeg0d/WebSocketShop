@@ -1,6 +1,7 @@
-from pydantic import BaseModel, ConfigDict
 from datetime import datetime
-from typing import List, Dict
+from typing import Dict, List
+
+from pydantic import BaseModel, ConfigDict
 
 
 class SOrderResponse(BaseModel):

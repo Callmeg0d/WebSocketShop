@@ -1,17 +1,26 @@
-from fastapi.responses import JSONResponse
-from fastapi import APIRouter, Response, Depends, Body
-from jose import jwt as jose_jwt, JWTError
-from app.config import settings
-from app.users.auth import get_password_hash, create_access_token, create_refresh_token
-from app.users.dependencies import get_refresh_token, get_current_user
-from app.users.schemas import SUserAuth, SChangeAddress, SChangeName
-from app.users.dao import UsersDAO
-from app.users.auth import authenticate_user
-from app.exceptions import UserAlreadyExistsException, IncorrectEmailOrPasswordException
-from fastapi import Request
-from app.exceptions import TokenExpiredException
 from datetime import datetime, timedelta
+
+from fastapi import APIRouter, Body, Depends, Response
+from fastapi.responses import JSONResponse
+from jose import JWTError
+from jose import jwt as jose_jwt
+
+from app.config import settings
+from app.exceptions import (
+    IncorrectEmailOrPasswordException,
+    TokenExpiredException,
+    UserAlreadyExistsException,
+)
 from app.tasks.tasks import send_registration_confirmation_email
+from app.users.auth import (
+    authenticate_user,
+    create_access_token,
+    create_refresh_token,
+    get_password_hash,
+)
+from app.users.dao import UsersDAO
+from app.users.dependencies import get_current_user, get_refresh_token
+from app.users.schemas import SChangeAddress, SChangeName, SUserAuth
 
 router_auth = APIRouter(
     prefix="/auth",
@@ -37,10 +46,12 @@ async def register_user(user_data: SUserAuth):
     # Отправка письма с подтверждением
     send_registration_confirmation_email.delay(user_data.email)
 
-    return JSONResponse(content={"message": "User created successfully"}, status_code=201)
+    return JSONResponse(
+        content={"message": "User created successfully"}, status_code=201
+    )
 
 
-@router_auth.post('/login')
+@router_auth.post("/login")
 async def login_user(response: Response, user_data: SUserAuth):
     user = await authenticate_user(user_data.email, user_data.password)
     if not user:
@@ -87,17 +98,19 @@ async def refresh_token(response: Response, token: str = Depends(get_refresh_tok
     # Создаём новый access token
     new_access_token = jose_jwt.encode(
         {"sub": str(user.id), "exp": datetime.utcnow() + timedelta(minutes=30)},
-        settings.SECRET_KEY, algorithm=settings.ALGORITHM
+        settings.SECRET_KEY,
+        algorithm=settings.ALGORITHM,
     )
 
     refresh_expire_time = datetime.utcfromtimestamp(expire)
     if refresh_expire_time - datetime.utcnow() < timedelta(minutes=2):
         new_refresh_token = jose_jwt.encode(
             {"sub": str(user.id), "exp": datetime.utcnow() + timedelta(days=7)},
-            settings.SECRET_KEY, algorithm=settings.ALGORITHM
+            settings.SECRET_KEY,
+            algorithm=settings.ALGORITHM,
         )
         response.set_cookie("refresh_token", new_refresh_token, max_age=604800, httponly=True,
-                            samesite="lax", path="/" ,secure=False)
+                          samesite="lax", path="/", secure=False)
     else:
         new_refresh_token = token  # Оставляем старый refresh_token
 
@@ -109,13 +122,20 @@ async def refresh_token(response: Response, token: str = Depends(get_refresh_tok
 
 @router_auth.get("/me")
 async def get_me(user=Depends(get_current_user)):
-    return JSONResponse(content={"id": user.id, "email": user.email,
-                                 "name": user.name, "delivery_address": user.delivery_address})
+    return JSONResponse(
+        content={
+            "id": user.id,
+            "email": user.email,
+            "name": user.name,
+            "delivery_address": user.delivery_address,
+        }
+    )
 
 
 @router_users.post("/address")
 async def change_address(user=Depends(get_current_user), address: SChangeAddress = Body(...)):
-    result = await UsersDAO.change_address(user_id=user.id, new_address=address.new_address)
+    result = await UsersDAO.change_address(
+        user_id=user.id, new_address=address.new_address)
     return result
 
 

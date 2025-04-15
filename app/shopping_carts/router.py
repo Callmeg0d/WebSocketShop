@@ -1,11 +1,13 @@
-from fastapi import APIRouter, Depends, Body
+from fastapi import APIRouter, Body, Depends
 
-from app.exceptions import CannotHaveLessThan1Product, NeedToHaveAProductToIncreaseItsQuantity
+from app.exceptions import (
+    CannotHaveLessThan1Product,
+    NeedToHaveAProductToIncreaseItsQuantity,
+)
 from app.shopping_carts.dao import CartsDAO
-
+from app.shopping_carts.schemas import SShoppingCart, UpdateQuantityRequest
 from app.users.dependencies import get_current_user
 from app.users.models import Users
-from app.shopping_carts.schemas import SShoppingCart, UpdateQuantityRequest
 
 router = APIRouter(
     prefix="/cart",
@@ -21,7 +23,9 @@ async def get_cart(user: Users = Depends(get_current_user)):
 @router.post("/add")
 async def add_to_cart(user: Users = Depends(get_current_user),
                       cart: SShoppingCart = Body(...)):
-    await CartsDAO.add_to_cart(product_id=cart.product_id, user_id=user.id, quantity=cart.quantity)
+    await CartsDAO.add_to_cart(
+        product_id=cart.product_id, user_id=user.id, quantity=cart.quantity
+    )
     return {"success": True}
 
 
@@ -35,7 +39,7 @@ async def remove_from_cart(product_id: int, user: Users = Depends(get_current_us
 async def update_cart_item(
     product_id: int,
     request: UpdateQuantityRequest,
-    user: Users = Depends(get_current_user)
+    user: Users = Depends(get_current_user),
 ):
     if request.quantity < 1:
         raise CannotHaveLessThan1Product

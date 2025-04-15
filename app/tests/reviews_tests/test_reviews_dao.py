@@ -24,7 +24,8 @@ async def test_add_review_success(async_client: AsyncClient, auth_headers):
 
     async with async_session_maker() as session:
         result = await session.execute(
-            select(Reviews).where(Reviews.product_id == review_data["product_id"])
+            select(Reviews)
+            .where(Reviews.product_id == review_data["product_id"])
         )
         review_in_db = result.scalar()
         assert review_in_db is not None

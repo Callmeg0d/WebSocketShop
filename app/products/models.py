@@ -1,12 +1,13 @@
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
+
+from sqlalchemy import JSON, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import JSON, ForeignKey
 
 if TYPE_CHECKING:
-    from app.shopping_carts.models import ShoppingCarts
     from app.reviews.models import Reviews
+    from app.shopping_carts.models import ShoppingCarts
 
 
 class Products(Base):

@@ -1,9 +1,9 @@
-from sqlalchemy import update, select, delete
-from app.products.models import Products
-from app.database import async_session_maker
+from sqlalchemy import delete, select, update
 
-from app.shopping_carts.models import ShoppingCarts
 from app.dao.base import BaseDAO
+from app.database import async_session_maker
+from app.products.models import Products
+from app.shopping_carts.models import ShoppingCarts
 
 
 class CartsDAO(BaseDAO):
@@ -13,7 +13,8 @@ class CartsDAO(BaseDAO):
     async def add_to_cart(cls, product_id: int, user_id: int, quantity: int):
         async with async_session_maker() as session:
             result = await session.execute(
-                select(Products.price, Products.product_quantity).where(Products.product_id == product_id)
+                select(Products.price, Products.product_quantity)
+                .where(Products.product_id == product_id)
             )
             product = result.first()
 
@@ -22,18 +23,23 @@ class CartsDAO(BaseDAO):
 
             # Проверка наличия товара в корзине
             existing_cart_item = await session.execute(
-                select(ShoppingCarts).where(ShoppingCarts.user_id == user_id,
-                                            ShoppingCarts.product_id == product_id)
+                select(ShoppingCarts).where(
+                    ShoppingCarts.user_id == user_id,
+                    ShoppingCarts.product_id == product_id,
+                )
             )
             cart_item = existing_cart_item.scalar_one_or_none()
 
             if cart_item:
                 await session.execute(
                     update(ShoppingCarts)
-                    .where(ShoppingCarts.user_id == user_id, ShoppingCarts.product_id == product_id)
+                    .where(
+                        ShoppingCarts.user_id == user_id,
+                        ShoppingCarts.product_id == product_id,
+                    )
                     .values(
                         quantity=ShoppingCarts.quantity + quantity,
-                        total_cost=ShoppingCarts.total_cost + total_cost
+                        total_cost=ShoppingCarts.total_cost + total_cost,
                     )
                 )
             else:
@@ -41,7 +47,7 @@ class CartsDAO(BaseDAO):
                     user_id=user_id,
                     product_id=product_id,
                     quantity=quantity,
-                    total_cost=total_cost
+                    total_cost=total_cost,
                 )
                 session.add(new_cart_item)
             await session.commit()
@@ -58,7 +64,7 @@ class CartsDAO(BaseDAO):
                     Products.price,
                     ShoppingCarts.quantity,
                     (Products.price * ShoppingCarts.quantity).label("total_cost"),
-                    Products.product_quantity
+                    Products.product_quantity,
                 )
                 .join(Products, ShoppingCarts.product_id == Products.product_id)
                 .where(ShoppingCarts.user_id == user_id)
@@ -82,9 +88,16 @@ class CartsDAO(BaseDAO):
         async with async_session_maker() as session:
             query = (
                 update(ShoppingCarts)
-                .where(ShoppingCarts.user_id == user_id, ShoppingCarts.product_id == product_id)
-                .values(quantity=quantity, total_cost=select(Products.price * quantity)
-                        .where(Products.product_id == product_id).scalar_subquery())
+                .where(
+                    ShoppingCarts.user_id == user_id,
+                    ShoppingCarts.product_id == product_id,
+                )
+                .values(
+                    quantity=quantity,
+                    total_cost=select(Products.price * quantity)
+                    .where(Products.product_id == product_id)
+                    .scalar_subquery(),
+                )
                 .returning(ShoppingCarts.total_cost)
             )
             result = await session.execute(query)

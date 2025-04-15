@@ -1,6 +1,7 @@
-from app.users.dao import UsersDAO
-from httpx import AsyncClient
 import pytest
+from httpx import AsyncClient
+
+from app.users.dao import UsersDAO
 
 
 @pytest.mark.asyncio

@@ -3,20 +3,18 @@ import json
 from datetime import datetime
 
 import pytest
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy import insert, text
 
 from app.categories.models import Categories
 from app.config import settings
-from app.database import Base, engine, async_session_maker
-from app.orders.models import Orders
+from app.database import Base, async_session_maker, engine
 from app.main import app as fastapi_app
+from app.orders.models import Orders
 from app.products.models import Products
 from app.reviews.models import Reviews
 from app.shopping_carts.models import ShoppingCarts
-
 from app.users.models import Users
-
-from httpx import AsyncClient, ASGITransport
 
 
 @pytest.fixture(scope="session", autouse=True)

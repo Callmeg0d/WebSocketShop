@@ -21,7 +21,9 @@ class UsersDAO(BaseDAO):
     async def change_address(cls, new_address: str, user_id: int):
         async with async_session_maker() as session:
             await session.execute(
-                update(Users).where(Users.id == user_id).values(delivery_address=new_address)
+                update(Users).
+                where(Users.id == user_id).
+                values(delivery_address=new_address)
             )
             await session.commit()
             return new_address

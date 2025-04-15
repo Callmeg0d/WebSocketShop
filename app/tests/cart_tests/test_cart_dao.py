@@ -146,7 +146,9 @@ async def test_update_existing_product_in_cart():
         cart_item = result.scalars().first()
 
         assert cart_item.quantity == initial_quantity + additional_quantity
-        assert cart_item.total_cost == (initial_total_cost + product.price * additional_quantity)
+        assert cart_item.total_cost == (
+                initial_total_cost + product.price * additional_quantity
+        )
 
 
 @pytest.mark.asyncio

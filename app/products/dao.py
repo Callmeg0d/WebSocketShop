@@ -11,18 +11,15 @@ class ProductDAO(BaseDAO):
     @classmethod
     async def get_product_by_id(cls, product_id):
         async with async_session_maker() as session:
-            query = (
-                select(
-                    Products.product_id,
-                    Products.name,
-                    Products.description,
-                    Products.price,
-                    Products.product_quantity,
-                    Products.image,
-                    Products.features,
-                    Products.category_name
-                ).where(Products.product_id == product_id)
-            )
+            query = select(
+                Products.product_id,
+                Products.name,
+                Products.description,
+                Products.price,
+                Products.product_quantity,
+                Products.image,
+                Products.features,
+                Products.category_name,
+            ).where(Products.product_id == product_id)
             result = await session.execute(query)
             return result.mappings().first()
-

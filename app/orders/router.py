@@ -1,12 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException
 
+from app.exceptions import (
+    CannotMakeOrderWithoutAddress,
+    CannotMakeOrderWithoutItems,
+    NotEnoughProductsInStock,
+)
 from app.orders.dao import OrdersDAO
 from app.orders.schemas import SOrderResponse
 from app.products.dao import ProductDAO
 from app.tasks.tasks import send_order_confirmation_email
 from app.users.dependencies import get_current_user
 from app.users.models import Users
-from app.exceptions import CannotMakeOrderWithoutAddress, CannotMakeOrderWithoutItems, NotEnoughProductsInStock
 
 router = APIRouter(
     prefix="/orders",

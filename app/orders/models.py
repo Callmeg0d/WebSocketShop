@@ -1,8 +1,10 @@
-from typing import TYPE_CHECKING
-from app.database import Base
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import ForeignKey, Date, JSON
 from datetime import date
+from typing import TYPE_CHECKING
+
+from sqlalchemy import JSON, Date, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.database import Base
 
 if TYPE_CHECKING:
     from app.users.models import Users

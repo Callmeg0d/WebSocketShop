@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Body
+from fastapi import APIRouter, Body, Depends
 
 from app.reviews.dao import ReviewsDAO
 from app.reviews.schemas import SReviews
